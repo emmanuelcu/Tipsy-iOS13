@@ -9,7 +9,7 @@
 import UIKit
 
 class CalculatorViewController: UIViewController {
-
+    
     @IBOutlet weak var billTextField: UITextField!
     @IBOutlet weak var zeroPctButton: UIButton!
     @IBOutlet weak var tenPctButton: UIButton!
@@ -18,29 +18,34 @@ class CalculatorViewController: UIViewController {
     
     var tip = 0.10
     var persons = 2
+    var tipWithoutSign = 0
     
     @IBAction func tipChanged(_ sender: UIButton) {
+        
+        billTextField.endEditing(true)
+        
         zeroPctButton.isSelected = false
         tenPctButton.isSelected = false
         twentyPctButton.isSelected = false
-        
         sender.isSelected = true
         
         let buttonTitle = sender.currentTitle!
         let butttonTitleMinusPercentSign = String(buttonTitle.dropLast())
         let buttonTitleAsNumber = Double(butttonTitleMinusPercentSign)!
         tip = buttonTitleAsNumber / 100
-        
+        tipWithoutSign = Int(butttonTitleMinusPercentSign)!
         
     }
+    
     @IBAction func stepperValueChanged(_ sender: UIStepper) {
         splitNumberLabel.text = String(format: "%.0f", sender.value)
         persons = Int(sender.value)
     }
+    
     @IBAction func calculatePressed(_ sender: UIButton) {
-        print(tip)
         calculateTip()
-        print("The result is \(calculateTip())")
+        
+        self.performSegue(withIdentifier: "goToResult", sender: self)
     }
     
     func calculateTip() -> String{
@@ -53,6 +58,15 @@ class CalculatorViewController: UIViewController {
             let amountSplited = amountToNumber * (1 + tip) / Double(persons)
             let resultToDecimalPlaces = String(format: "%.2f", amountSplited)
             return resultToDecimalPlaces
+        }
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "goToResult"{
+            let destinationVC = segue.destination as! ResultsViewController
+            destinationVC.tipResult = calculateTip()
+            destinationVC.totalTip = tipWithoutSign
+            destinationVC.totalPersons = persons
         }
     }
     
